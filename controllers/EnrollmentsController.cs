@@ -19,7 +19,7 @@ namespace ELearningApp.Controllers
             _context = context;
         }
 
-        // 🎓 Student enroll in course
+        //  Student enroll in course
         [Authorize(Roles = "Student")]
         [HttpPost]
         public async Task<IActionResult> Enroll(CreateEnrollmentDto dto)

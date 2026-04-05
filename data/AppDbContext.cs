@@ -15,7 +15,7 @@ namespace ELearningApp.Data
         public DbSet<Course> Courses { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
 
-        // 👇 IMPORTANT PART (relationship configuration)
+        // relationship configuration
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
