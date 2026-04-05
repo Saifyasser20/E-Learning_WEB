@@ -3,15 +3,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ELearningApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DbContext
+// Service Layer
+builder.Services.AddScoped<ICourseService, CourseService>();
+
+// Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
+
+// JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
@@ -37,6 +43,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+app.UseRouting(); // 👈 optional but better
 app.UseAuthentication();
 app.UseAuthorization();
 

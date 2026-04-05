@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using ELearningApp.Data;
-using ELearningApp.Models;
 using ELearningApp.DTOs;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-
+using ELearningApp.Services;
 
 namespace ELearningApp.Controllers
 {
@@ -13,15 +10,14 @@ namespace ELearningApp.Controllers
     [Route("api/[controller]")]
     public class CoursesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ICourseService _courseService;
 
-        public CoursesController(AppDbContext context)
+        public CoursesController(ICourseService courseService)
         {
-            _context = context;
+            _courseService = courseService;
         }
 
-        // Admin only
-       [Authorize(Roles = "Admin,Instructor")]
+        [Authorize(Roles = "Admin,Instructor")]
         [HttpPost]
         public async Task<IActionResult> CreateCourse(CreateCourseDto dto)
         {
@@ -32,34 +28,15 @@ namespace ELearningApp.Controllers
 
             var userId = int.Parse(claim.Value);
 
-            var course = new Course
-            {
-                Title = dto.Title,
-                Description = dto.Description,
-                InstructorId = userId
-            };
+            var result = await _courseService.CreateCourse(dto, userId);
 
-            _context.Courses.Add(course);
-            await _context.SaveChangesAsync();
-
-            return Ok(course);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCourseById(int id)
         {
-            var course = await _context.Courses
-                .AsNoTracking()
-                .Where(c => c.Id == id)
-                .Select(c => new CourseDetailsDto
-                {
-                    Id = c.Id,
-                    Title = c.Title,
-                    Students = c.Enrollments
-                        .Select(e => e.User.Name)
-                        .ToList()
-                })
-                .FirstOrDefaultAsync();
+            var course = await _courseService.GetCourseById(id);
 
             if (course == null)
                 return NotFound();
@@ -67,21 +44,10 @@ namespace ELearningApp.Controllers
             return Ok(course);
         }
 
-        //  Get all courses
-       [HttpGet]
+        [HttpGet]
         public async Task<IActionResult> GetCourses()
         {
-            var courses = await _context.Courses
-                .AsNoTracking()
-                .Select(c => new CourseResponseDto
-                {
-                    Id = c.Id,
-                    Title = c.Title,
-                    Description = c.Description,
-                    InstructorName = c.Instructor.Name
-                })
-                .ToListAsync();
-
+            var courses = await _courseService.GetCourses();
             return Ok(courses);
         }
     }
