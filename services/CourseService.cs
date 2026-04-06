@@ -14,7 +14,7 @@ namespace ELearningApp.Services
             _context = context;
         }
 
-        public async Task<object> CreateCourse(CreateCourseDto dto, int userId)
+        public async Task<CourseCreatedDto> CreateCourse(CreateCourseDto dto, int userId)
         {
             var course = new Course
             {
@@ -26,7 +26,13 @@ namespace ELearningApp.Services
             _context.Courses.Add(course);
             await _context.SaveChangesAsync();
 
-            return course;
+            return new CourseCreatedDto
+            {
+                Id = course.Id,
+                Title = course.Title,
+                Description = course.Description,
+                InstructorId = course.InstructorId
+            };
         }
 
         public async Task<List<CourseResponseDto>> GetCourses()
